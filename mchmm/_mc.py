@@ -315,7 +315,8 @@ class MarkovChain:
             _ps = fp[seq[i - 1]]
             _sample = np.argmax(ss.multinomial.rvs(1, _ps, 1, random_state=r_states[i]))
             seq[i] = _sample
-
+        
+        print("CONFIRMING THIS IS OWENS VERSION")
         if ret == "indices":
             return seq
         elif ret == "states":
