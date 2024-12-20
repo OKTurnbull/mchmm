@@ -278,13 +278,20 @@ class MarkovChain:
             Sequence of state names.
             Returned if `return` arg is set to 'states' or 'both'.
         """
+        
         # matrices init
         if tf is None:
             tf = self.observed_matrix
             fp = self.observed_p_matrix
-        else:
+        elif len(tf.shape) == 2:
             fp = tf / tf.sum(axis=1)[:, None]
-
+            time_dep = False
+        elif len(tf.shape) == 3:
+            fp = np.zeros(tf.shape) #create zero array to populate
+            for i in range(tf.shape[0]):
+                fp[i] = tf[i] / tf[i].sum(axis=1)[:, None]
+            time_dep = True
+        
         # states init
         if states is None:
             states = self.states
@@ -309,14 +316,29 @@ class MarkovChain:
 
         # random seeds
         r_states = np.random.randint(0, 999999, n) if seed is None else seed
-
-        # simulation procedure
-        for i in range(1, n):
-            _ps = fp[seq[i - 1]]
-            _sample = np.argmax(ss.multinomial.rvs(1, _ps, 1, random_state=r_states[i]))
-            seq[i] = _sample
         
-        print("CONFIRMING THIS IS OWENS VERSION")
+        days_in_state = 0 #define the number of days in a given state
+        if time_dep: #i.e. time dependence
+            # simulation procedure
+            for i in range(1, n):
+                _ps = fp[days_in_state][seq[i - 1]]
+                _sample = np.argmax(ss.multinomial.rvs(1, _ps, 1, random_state=r_states[i]))
+                seq[i] = _sample
+                
+                #days in state counter
+                if seq[i] == seq[i - 1]: #current state same as previous state
+                    days_in_state += 1
+                else: #state has changed
+                    days_in_state
+                
+        else: #i.e. no time dependence
+            # simulation procedure
+            for i in range(1, n):
+                _ps = fp[seq[i - 1]]
+                _sample = np.argmax(ss.multinomial.rvs(1, _ps, 1, random_state=r_states[i]))
+                seq[i] = _sample
+        
+        
         if ret == "indices":
             return seq
         elif ret == "states":
