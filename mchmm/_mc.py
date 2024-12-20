@@ -317,9 +317,10 @@ class MarkovChain:
         # random seeds
         r_states = np.random.randint(0, 999999, n) if seed is None else seed
         
-        days_in_state = 0 #define the number of days in a given state
+        
         if time_dep: #i.e. time dependence
             # simulation procedure
+            days_in_state = 0 #define the number of days in a given state
             for i in range(1, n):
                 _ps = fp[days_in_state][seq[i - 1]]
                 _sample = np.argmax(ss.multinomial.rvs(1, _ps, 1, random_state=r_states[i]))
@@ -329,7 +330,7 @@ class MarkovChain:
                 if seq[i] == seq[i - 1]: #current state same as previous state
                     days_in_state += 1
                 else: #state has changed
-                    days_in_state
+                    days_in_state = 0
                 
         else: #i.e. no time dependence
             # simulation procedure
